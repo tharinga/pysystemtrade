@@ -17,7 +17,7 @@ from sysexecution.orders.contract_orders import contractOrder
 from sysexecution.order_stacks.broker_order_stack import orderWithControls
 from sysexecution.orders.broker_orders import market_order_type
 
-SIZE_LIMIT = 1
+# SIZE_LIMIT = 1
 ORDER_TIME_OUT = 600
 
 
@@ -55,7 +55,7 @@ class algoMarket(Algo):
             cut_down_contract_order = copy(contract_order)
         else:
             cut_down_contract_order = contract_order.reduce_trade_size_proportionally_so_smallest_leg_is_max_size(
-                SIZE_LIMIT
+                self.get_size_limit(contract_order)
             )
 
         if cut_down_contract_order.trade != contract_order.trade:

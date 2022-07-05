@@ -337,7 +337,7 @@ def enter_manual_instrument_order(data):
     strategy_name = get_valid_strategy_name_from_user(data=data, source="positions")
     instrument_code = get_valid_instrument_code_from_user(data)
     qty = get_and_convert(
-        "Quantity (-ve for sell, +ve for buy?)", type_expected=int, allow_default=False
+        "Quantity (-ve for sell, +ve for buy?)", type_expected=float, allow_default=False
     )
     possible_order_types = market_order_type.allowed_types()
     order_type = input("Order type (one of %s)?" % str(possible_order_types))

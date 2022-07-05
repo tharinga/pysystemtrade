@@ -134,18 +134,22 @@ class stackHandlerCreateBrokerOrders(stackHandlerForFills):
             remaining_contract_order
         )
 
-        contract_order_to_trade = self.liquidity_size_contract_order(
-            contract_order_after_trade_limits
-        )
+        # TODO: evaluate the code snippet below for resizing order based on liquidity.
+        # Temporarily disabled because liquidity on Binance Testnet is not good
 
-        if contract_order_to_trade is missing_order:
+        # contract_order_to_trade = self.liquidity_size_contract_order(
+        #     contract_order_after_trade_limits
+        # )
+
+        if contract_order_after_trade_limits is missing_order:
             return missing_order
 
-        if contract_order_to_trade.fill_equals_desired_trade():
+        if contract_order_after_trade_limits.fill_equals_desired_trade():
             # Nothing left to trade
             return missing_order
 
-        return contract_order_to_trade
+        return contract_order_after_trade_limits
+
 
     def apply_trade_limits_to_contract_order(
         self, proposed_order: contractOrder

@@ -32,6 +32,8 @@ sources_of_limit_price = [
     limit_price_from_offside_price,
 ]
 
+MAX_NOTIONAL = 1000
+DECIMAL_PRECISION = 3
 
 @dataclass
 class benchmarkPriceCollection(object):
@@ -57,6 +59,10 @@ class Algo(object):
     @property
     def contract_order(self):
         return self._contract_order
+
+    def get_size_limit(self, order: contractOrder):
+        limit = round(MAX_NOTIONAL / order.reference_price, DECIMAL_PRECISION)
+        return limit
 
     def submit_trade(self) -> orderWithControls:
         """

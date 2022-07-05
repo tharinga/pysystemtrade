@@ -1,8 +1,11 @@
+import math
+
 import numpy as np
 
 from syscore.genutils import sign
 from syscore.objects import missing_order
 
+ROUNDING_PRECISION = 4
 
 class tradeQuantity(list):
     def __init__(self, trade_or_fill_qty):
@@ -14,10 +17,12 @@ class tradeQuantity(list):
             trade_or_fill_qty = [trade_or_fill_qty]
 
         elif isinstance(trade_or_fill_qty, float):
-            trade_or_fill_qty = [int(trade_or_fill_qty)]
+            # trade_or_fill_qty = [int(trade_or_fill_qty)]
+            trade_or_fill_qty = [trade_or_fill_qty]
         else:
             # must be a list
-            trade_or_fill_qty = [int(trade) for trade in trade_or_fill_qty]
+            # trade_or_fill_qty = [int(trade) for trade in trade_or_fill_qty]
+            pass
 
         super().__init__(trade_or_fill_qty)
 
@@ -37,17 +42,18 @@ class tradeQuantity(list):
         return all([sign(x) == sign(y) for x, y in zip(self, other)])
 
     def __eq__(self, other):
-        return all([x == y for x, y in zip(self, other)])
+        return all([math.isclose(x, y, abs_tol=0.00000001) for x, y in zip(self, other)])
+        # return all([x == y for x, y in zip(self, other)])
 
     def __sub__(self, other):
         assert len(self) == len(other)
-        result = [x - y for x, y in zip(self, other)]
+        result = [round(x - y, ROUNDING_PRECISION) for x, y in zip(self, other)]
         result = tradeQuantity(result)
         return result
 
     def __add__(self, other):
         assert len(self) == len(other)
-        result = [x + y for x, y in zip(self, other)]
+        result = [round(x + y, ROUNDING_PRECISION) for x, y in zip(self, other)]
         result = tradeQuantity(result)
         return result
 
@@ -160,7 +166,8 @@ def change_trade_size_proportionally_to_meet_abs_qty_limit(
     if ratio >= 1.0:
         return original_qty
 
-    new_qty = [abs(int(np.floor(ratio * qty))) for qty in trade_list]
+    # new_qty = [abs(int(np.floor(ratio * qty))) for qty in trade_list]
+    new_qty = [abs(np.floor(ratio * qty)) for qty in trade_list]
     new_qty_adjusted = reduce_trade_size_proportionally_to_abs_limit_per_leg(
         original_qty, new_qty
     )
@@ -207,6 +214,7 @@ def reduce_trade_size_proportionally_to_abs_limit_per_leg(
     if largediff:
         trade_list_with_ratio_as_int = [0] * len(trade_list_qty)
 
+    # TODO: should probably be float
     return trade_list_with_ratio_as_int
 
 
@@ -248,4 +256,5 @@ def reduce_trade_size_proportionally_so_smallest_leg_is_max_size(
     if largediff:
         return trade_list_qty
 
+    # TODO: should probably be float
     return trade_list_with_ratio_as_int

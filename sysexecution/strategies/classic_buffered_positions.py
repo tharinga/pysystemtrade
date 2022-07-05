@@ -139,6 +139,13 @@ def list_of_trades_given_optimal_and_actual_positions(
     return trade_list
 
 
+def get_size_limits_for_contract(instrument_code: str, reference_contract: str):
+    from private.sysbrokers.CCXT.contract.ccxt_contract_symbol import ccxtContractSymbol
+    contract_info = ccxtContractSymbol()
+    limits = contract_info.get_min_max_order_size(instrument_code, reference_contract)
+    return limits['amount']['min'], limits['amount']['max'], limits['cost']['min']
+
+
 def trade_given_optimal_and_actual_positions(
     data: dataBlob,
     strategy_name: str,
@@ -146,22 +153,43 @@ def trade_given_optimal_and_actual_positions(
     optimal_positions: optimalPositions,
     actual_positions: dict,
 ) -> instrumentOrder:
+    raise Exception("DO NOT RUN THIS CODE FOR CCXT")
 
     upper_for_instrument = optimal_positions.upper_positions[instrument_code]
     lower_for_instrument = optimal_positions.lower_positions[instrument_code]
     actual_for_instrument = actual_positions.get(instrument_code, 0.0)
 
+
+    # TODO: create configurable rounding function
     if actual_for_instrument < lower_for_instrument:
-        required_position = round(lower_for_instrument)
+        required_position = lower_for_instrument   # round(lower_for_instrument)
+
     elif actual_for_instrument > upper_for_instrument:
-        required_position = round(upper_for_instrument)
+        required_position = upper_for_instrument  # round(upper_for_instrument)
     else:
         required_position = actual_for_instrument
+
 
     # Might seem weird to have a zero order, but since orders can be updated
     # it makes sense
 
     trade_required = required_position - actual_for_instrument
+
+
+    minimum, maximum, min_notional = get_size_limits_for_contract(
+        instrument_code, optimal_positions.reference_contracts[instrument_code]
+    )
+
+    reference_price = optimal_positions.reference_prices[instrument_code]
+
+    if abs(trade_required) < minimum:
+        trade_required = 0
+
+    if abs(trade_required) > maximum:
+        trade_required = maximum * sign(trade_required)
+
+    if abs(trade_required) * reference_price < min_notional:
+        trade_required = 0
 
     reference_contract = optimal_positions.reference_contracts[instrument_code]
     reference_price = optimal_positions.reference_prices[instrument_code]
@@ -194,3 +222,7 @@ def trade_given_optimal_and_actual_positions(
     )
 
     return order_required
+
+
+def sign(amount: float):
+    return 1 if amount > 0 else -1

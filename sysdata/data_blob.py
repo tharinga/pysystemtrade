@@ -1,5 +1,7 @@
 from copy import copy
 
+from private.sysbrokers.CCXT.ccxt_api_config import ccxtApiConfig
+from private.sysbrokers.CCXT.ccxt_connection import connectionCCXT
 from sysbrokers.IB.ib_connection import connectionIB
 from syscore.objects import arg_not_supplied, get_class_name
 from syscore.text import camel_case_split
@@ -102,6 +104,7 @@ class dataBlob(object):
             csv=self._add_csv_class,
             arctic=self._add_arctic_class,
             mongo=self._add_mongo_class,
+            ccxt=self._add_ccxt_class,
         )
 
         method_to_add_with = class_dict.get(prefix, None)
@@ -185,6 +188,21 @@ class dataBlob(object):
 
         return resolved_instance
 
+    def _add_ccxt_class(self, class_object):
+        log = self._get_specific_logger(class_object)
+        try:
+            resolved_instance = class_object(self.ccxt_conn, log=log)
+        except Exception as e:
+            class_name = get_class_name(class_object)
+            msg = (
+                    "Error %s couldn't evaluate %s(self.ccxt_conn, log = self.log.setup(component = %s)) "
+                    "This might be because arguments don't follow pattern"
+                    % (str(e), class_name, class_name)
+            )
+            self._raise_and_log_error(msg)
+
+        return resolved_instance
+
     def _get_csv_paths_for_class(self, class_object) -> str:
         class_name = get_class_name(class_object)
         csv_data_paths = self.csv_data_paths
@@ -258,6 +276,8 @@ class dataBlob(object):
         self.close()
 
     def close(self):
+        print("--FIX-- Not closing connection to IB --FIX--")
+        return
         if self._ib_conn is not arg_not_supplied:
             self.ib_conn.close_connection()
             self.db_ib_broker_client_id.release_clientid(self.ib_conn.client_id())
@@ -294,6 +314,7 @@ class dataBlob(object):
                     raise e
 
     def _get_next_client_id_for_ib(self) -> int:
+        return 1
         ## default to tracking ID through mongo change if required
         self.add_class_object(mongoIbBrokerClientIdData)
         client_id = self.db_ib_broker_client_id.return_valid_client_id()
@@ -313,6 +334,25 @@ class dataBlob(object):
         mongo_db = mongoDb()
 
         return mongo_db
+
+    @property
+    def ccxt_conn(self) -> connectionCCXT:
+        ccxt_conn = getattr(self, "_ccxt_conn", arg_not_supplied)
+        if ccxt_conn is arg_not_supplied:
+            ccxt_conn = self._get_new_ccxt_connection()
+            self._ccxt_conn = ccxt_conn
+
+        return ccxt_conn
+
+    def _get_new_ccxt_connection(self) -> connectionCCXT:
+        ccxt_config = ccxtApiConfig(
+            exchange=self.config.ccxt_exchange,
+            api_key=self.config.ccxt_api_key,
+            api_secret=self.config.ccxt_api_secret,
+            spot_api_key=self.config.ccxt_spot_api_key,
+            spot_api_secret=self.config.ccxt_spot_api_secret,
+        )
+        return connectionCCXT(ccxt_config)
 
     @property
     def config(self) -> Config:
@@ -342,7 +382,7 @@ class dataBlob(object):
         return log_name
 
 
-source_dict = dict(arctic="db", mongo="db", csv="db", ib="broker")
+source_dict = dict(arctic="db", mongo="db", csv="db", ib="broker", ccxt="broker")
 
 
 def identifying_name(split_up_name: list, keep_original_prefix=False) -> str:

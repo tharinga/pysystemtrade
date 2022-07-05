@@ -38,7 +38,7 @@ IMBALANCE_THRESHOLD = 5
 IMBALANCE_ADJ_FACTOR = 3
 
 # we only do one contract at a time
-SIZE_LIMIT = 1
+# SIZE_LIMIT = 1
 
 
 class algoOriginalBest(Algo):
@@ -86,7 +86,7 @@ class algoOriginalBest(Algo):
 
         cut_down_contract_order = (
             contract_order.reduce_trade_size_proportionally_so_smallest_leg_is_max_size(
-                SIZE_LIMIT
+                self.get_size_limit(contract_order)
             )
         )
         if cut_down_contract_order.trade != contract_order.trade:
@@ -358,6 +358,15 @@ def set_aggressive_limit_price(
     if not limit_trade:
         # market trade, don't bother
         return broker_order_with_controls
+
+    if broker_order_with_controls.completed():
+        return broker_order_with_controls
+
+    canceled_order = cancel_order(
+        data, broker_order_with_controls
+    )
+    canceled_order.update_order()
+    broker_order_with_controls.update_order()
 
     new_limit_price = check_current_limit_price_at_inside_spread(
         broker_order_with_controls

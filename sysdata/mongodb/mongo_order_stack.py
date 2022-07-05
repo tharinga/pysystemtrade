@@ -51,7 +51,7 @@ class mongoOrderStackData(orderStackData):
         )
 
     def get_order_with_id_from_stack(self, order_id: int):
-        result_dict = self.mongo_data.get_result_dict_for_key(order_id)
+        result_dict = self.mongo_data.get_result_dict_for_key(int(order_id))
         if result_dict is missing_data:
             return missing_order
 

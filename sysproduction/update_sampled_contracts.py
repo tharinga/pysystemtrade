@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from syscore.objects import missing_contract, success
 
 from sysobjects.contract_dates_and_expiries import contractDate, expiryDate
@@ -172,13 +174,20 @@ def create_contract_object_chain(
 def create_contract_date_chain(
     furthest_out_contract: contractDateWithRollParameters,
 ) -> list:
+    is_perpetual = furthest_out_contract.desired_roll_date.year - datetime.now().year > 10
+
     # To give us wiggle room, and ensure we start collecting the new forward a
     # little in advance
-    final_contract = furthest_out_contract.next_priced_contract()
+    if is_perpetual:
+        final_contract = furthest_out_contract
+        contract_date_chain = final_contract.contract_date.list_of_single_contract_dates
+    else:
+        final_contract = furthest_out_contract.next_priced_contract()
+        contract_date_chain = final_contract.get_contracts_from_recently_to_contract_date()
 
     ## this will pick up contracts from 6 months ago, to deal with any gaps
     ## however if these have expired they are marked as finished sampling later
-    contract_date_chain = final_contract.get_contracts_from_recently_to_contract_date()
+    # contract_date_chain = final_contract.get_contracts_from_recently_to_contract_date()
 
     return contract_date_chain
 
