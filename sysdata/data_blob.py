@@ -347,8 +347,6 @@ class dataBlob(object):
     def _get_new_ccxt_connection(self) -> connectionCCXT:
         ccxt_config = ccxtApiConfig(
             exchange=self.config.ccxt_exchange,
-            spot_api_key=self.config.ccxt_spot_api_key,
-            spot_api_secret=self.config.ccxt_spot_api_secret,
         )
         return connectionCCXT(ccxt_config)
 
