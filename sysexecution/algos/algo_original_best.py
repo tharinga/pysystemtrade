@@ -1,7 +1,7 @@
 """
 This is the original 'best execution' algo I used in my legacy system
 """
-from syscore.objects import missing_order
+from syscore.objects import missing_order, missing_data
 
 from sysdata.data_blob import dataBlob
 from sysexecution.algos.algo import Algo, limit_price_from_offside_price
@@ -294,6 +294,12 @@ def adverse_size_issue(
         )
     else:
         current_tick_analysis = ticker_object.current_tick_analysis
+
+    if current_tick_analysis is missing_data:
+        tick = ticker_object.ticker
+        log.warn(f"Invalid tick, bid: {tick['bid']}, bid size: {tick['bidSize']}, "
+                 f"ask: {tick['ask']},  ask size: {tick['askSize']}")
+        return True
 
     latest_imbalance_ratio_exceeded = _is_imbalance_ratio_exceeded(
         current_tick_analysis, log=log
