@@ -209,7 +209,7 @@ class RemoveMarketData:
         return min_ann_perc_std
 
 def get_remove_market_data(data) -> RemoveMarketData:
-    existing_bad_markets = get_existing_bad_markets()
+    existing_bad_markets = get_existing_bad_markets(data)
 
     max_cost, min_volume_contracts, min_volume_risk, \
              = get_bad_market_filter_parameters()
@@ -234,7 +234,7 @@ def get_remove_market_data(data) -> RemoveMarketData:
 
 def get_list_of_duplicate_market_tables(data):
     filters = get_bad_market_filter_parameters()
-    duplicate_dict = generate_matching_duplicate_dict()
+    duplicate_dict = generate_matching_duplicate_dict(config=data.config)
     mkt_data = get_data_for_markets(data)
     duplicates = [
         table_of_duplicate_markets_for_dict_entry(mkt_data, dict_entry, filters)
@@ -299,8 +299,8 @@ def get_data_for_markets(data):
 
 
 
-def get_existing_bad_markets():
-    production_config = get_production_config()
+def get_existing_bad_markets(data):
+    production_config = data.config
 
     excluded_markets_config_element = production_config.get_element_or_missing_data("exclude_instrument_lists")
     if excluded_markets_config_element is missing_data:
