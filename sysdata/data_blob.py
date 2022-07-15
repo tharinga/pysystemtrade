@@ -2,6 +2,7 @@ from copy import copy
 
 from private.sysbrokers.CCXT.ccxt_api_config import ccxtApiConfig
 from private.sysbrokers.CCXT.ccxt_connection import connectionCCXT
+from private.syslogdiag.gcloud_log import logToGoogleCloud
 from sysbrokers.IB.ib_connection import connectionIB
 from syscore.objects import arg_not_supplied, get_class_name
 from syscore.text import camel_case_split
@@ -369,7 +370,11 @@ class dataBlob(object):
     def log(self):
         log = getattr(self, "_log", arg_not_supplied)
         if log is arg_not_supplied:
-            log = logToMongod(self.log_name, mongo_db=self.mongo_db, data=self)
+            if self.config.environment in ['staging', 'production']:
+                log = logToGoogleCloud(self.log_name, mongo_db=self.mongo_db, data=self, env=self.config.environment)
+            else:
+                log = logToMongod(self.log_name, mongo_db=self.mongo_db, data=self)
+
             log.set_logging_level("on")
             self._log = log
 
