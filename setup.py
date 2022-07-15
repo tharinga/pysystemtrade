@@ -45,7 +45,7 @@ provided_yaml_files = package_files(provided_dir, "yaml")
 control_dir = os.path.join(dir_this_file(), "syscontrol")
 control_yaml_files = package_files(control_dir, "yaml")
 
-data_csv_path = os.path.join(dir_this_file(), "data")
+data_csv_path = os.path.join(dir_this_file(), "private", "data")
 data_csv_files = package_files(data_csv_path, "csv")
 
 init_csv_path = os.path.join(dir_this_file(), "sysinit")
@@ -57,7 +57,7 @@ test_data_csv_files = package_files(test_data_csv_path, "csv")
 default_config_path = os.path.join(dir_this_file(), "sysdata", "config")
 default_config_yaml_files = package_files(default_config_path, "yaml")
 
-brokers_csv_path = os.path.join(dir_this_file(), "sysbrokers")
+brokers_csv_path = os.path.join(dir_this_file(), "private", "sysbrokers")
 brokers_csv_files = package_files(brokers_csv_path, "csv")
 
 package_data = {
