@@ -129,7 +129,7 @@ class listOfPositions(list):
         my_position = self.position_for_object(tradeable_object)
         other_position = other_list_of_positions.position_for_object(tradeable_object)
         import math
-        if math.isclose(my_position, other_position, abs_tol=0.00000001):
+        if math.isclose(my_position, other_position, abs_tol=0.001):
             return False
         else:
             return True
