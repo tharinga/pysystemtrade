@@ -352,7 +352,7 @@ class dataBlob(object):
         ccxt_config = ccxtApiConfig(
             exchange=self.config.ccxt_exchange,
         )
-        return connectionCCXT(ccxt_config)
+        return connectionCCXT(ccxt_config, self.log)
 
     @property
     def config(self) -> Config:
